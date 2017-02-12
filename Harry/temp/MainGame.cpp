@@ -2,7 +2,7 @@
 #include "Error.h"
 #include <iostream>
 #include"ResourceManager.h"
-
+#include "Character.h"
 
 MainGame::MainGame():	_screenWidth(1024),
 						_screenHeight(768),
@@ -25,13 +25,6 @@ void MainGame::initSystems()
 	initShaders();
 	_spriteBatch.init();
 	_fpsLimiter.init(_maxFPS);
-
-	glm::vec2 pos(0.0f, 0.0f);
-	glm::vec2 pos2(60.0f, 0.0f);
-
-	rahul.init("Rahul", pos, 1);
-	sid.init("SID", pos2, 0);
-	
 }
 
 void MainGame::initialiseSDL()
@@ -57,11 +50,6 @@ void MainGame::run()
 	initSystems();	
 	gameLoop();
 }
-void MainGame::updateCharacters()
-{
-	rahul.update();
-	sid.update();	
-}
 
 void MainGame::gameLoop()
 {
@@ -70,9 +58,6 @@ void MainGame::gameLoop()
 		_fpsLimiter.begin();
 		processInput();
 		_camera.update();
-
-		updateCharacters();
-
 
 		/*for (int i = 0; i < _bullets.size();)
 		{
@@ -123,37 +108,17 @@ void MainGame::processInput()
 			break;
 		}		
 	}
-	if (_inputManager.isKeyPressed(SDLK_w))
-		sid.moveUP();
-		//_camera.setPosition(_camera.getPosition() + glm::vec2(0.0, -CAMERA_SPEED));
+	if(_inputManager.isKeyPressed( SDLK_w))
+		_camera.setPosition(_camera.getPosition() + glm::vec2(0.0, -CAMERA_SPEED));
 
 	if (_inputManager.isKeyPressed(SDLK_s))
-		sid.moveDOWN();
-		//_camera.setPosition(_camera.getPosition() + glm::vec2(0.0, CAMERA_SPEED));
+		_camera.setPosition(_camera.getPosition() + glm::vec2(0.0, CAMERA_SPEED));
 		
 	if (_inputManager.isKeyPressed(SDLK_a))
-		sid.moveLEFT();
-		//_camera.setPosition(_camera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0));
+		_camera.setPosition(_camera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0));
 		
 	if (_inputManager.isKeyPressed(SDLK_d))
-		sid.moveRIGHT();
-		//_camera.setPosition(_camera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0));
-
-	if (_inputManager.isKeyPressed(SDLK_UP))
-		rahul.moveUP();
-	//_camera.setPosition(_camera.getPosition() + glm::vec2(0.0, -CAMERA_SPEED));
-
-	if (_inputManager.isKeyPressed(SDLK_DOWN))
-		rahul.moveDOWN();
-	//_camera.setPosition(_camera.getPosition() + glm::vec2(0.0, CAMERA_SPEED));
-
-	if (_inputManager.isKeyPressed(SDLK_LEFT))
-		rahul.moveLEFT();
-	//_camera.setPosition(_camera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0));
-
-	if (_inputManager.isKeyPressed(SDLK_RIGHT))
-		rahul.moveRIGHT();
-	//_camera.setPosition(_camera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0));
+		_camera.setPosition(_camera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0));
 		
 	if (_inputManager.isKeyPressed(SDLK_q))
 		_camera.setScale(_camera.getScale() + SCALE_SPEED);
@@ -194,22 +159,17 @@ void MainGame::drawGame()
 	//Background
 	glm::vec4 bgPos(-_screenWidth/2,-_screenHeight/2,_screenWidth, _screenHeight);
 	static GLTexture backGroundTexture = ResourceManager::getTexture("Textures/harryPotter/Background/34.png");
-
-	rahul.draw(_spriteBatch);
-	sid.draw(_spriteBatch);
 	_spriteBatch.draw(bgPos, uv, backGroundTexture.id, -10.0f, color);
-	//std::cout << backGroundTexture.id<<std::endl;
 
-	//characters
-	
-	
-	
+	//character
+	glm::vec4 pos(0.0f, 0.0f, 50.0f, 100.0f);	
+	static GLTexture texture = ResourceManager::getTexture("Textures/harryPotter/Harry/harry.png");
+	_spriteBatch.draw(pos, uv, texture.id, 0.0f, color);
 
-	/*
 	for (int i = 0; i < _bullets.size(); i++)
 	{
 		_bullets[i].draw(_spriteBatch);
-	} */
+	}
 	
 	_spriteBatch.end();
 	_spriteBatch.renderBatch();	

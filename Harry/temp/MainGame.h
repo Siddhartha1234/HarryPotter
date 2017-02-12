@@ -10,8 +10,7 @@
 #include "InputManager.h"
 #include "Timing.h"
 #include "Window.h"
-#include "Character.h"
-#include "Bullet.h"
+#include"Bullet.h"
 
 enum class GameState {PLAY,EXIT};
 class MainGame
@@ -30,7 +29,6 @@ private:
 	void gameLoop();
 	void processInput();
 	void drawGame();
-	void updateCharacters();
 
 	Window _window;
 	int _screenWidth, _screenHeight;
@@ -49,7 +47,5 @@ private:
 
 	Camera2D _camera;
 	std::vector<Bullet> _bullets;
-
-	Character rahul, sid;
 };
 

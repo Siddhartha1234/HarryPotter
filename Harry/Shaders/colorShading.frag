@@ -12,5 +12,5 @@ void main()
 {
 	vec4 textureColor = texture(mySampler,fragmentUV);
 
-	color = textureColor;
+	color = fragmentColor*textureColor;
 }
