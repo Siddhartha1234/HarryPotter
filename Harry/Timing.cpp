@@ -4,10 +4,6 @@ FpsLimiter::FpsLimiter()
 {
 
 }
-void FpsLimiter::init(float maxFPS)
-{
-	setMaxFPS(maxFPS);
-}
 void FpsLimiter::begin()
 {
 	_startTicks = SDL_GetTicks();

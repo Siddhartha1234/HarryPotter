@@ -24,13 +24,10 @@ void MainGame::initSystems()
 	_window.createWindow("Game Engine", _screenWidth, _screenHeight, 0);
 	initShaders();
 	_spriteBatch.init();
-	_fpsLimiter.init(_maxFPS);
+	_fpsLimiter.setMaxFPS(_maxFPS);
 
-	glm::vec2 pos(0.0f, 0.0f);
-	glm::vec2 pos2(60.0f, 0.0f);
-
-	rahul.init("Rahul", pos, 1);
-	sid.init("SID", pos2, 0);
+	rahul.init("Rahul", glm::vec2(0.0f, 0.0f), 1, glm::vec2(30, 30));
+	sid.init("SID", glm::vec2(60.0f, 0.0f), 0, glm::vec2(30, 30));
 	
 }
 
@@ -57,11 +54,6 @@ void MainGame::run()
 	initSystems();	
 	gameLoop();
 }
-void MainGame::updateCharacters()
-{
-	rahul.update();
-	sid.update();	
-}
 
 void MainGame::gameLoop()
 {
@@ -70,9 +62,6 @@ void MainGame::gameLoop()
 		_fpsLimiter.begin();
 		processInput();
 		_camera.update();
-
-		updateCharacters();
-
 
 		/*for (int i = 0; i < _bullets.size();)
 		{
@@ -84,20 +73,22 @@ void MainGame::gameLoop()
 			i++;
 		}*/
 
-		drawGame();			
-
-		_fps = _fpsLimiter.end();
-
-		/*Use when we need to display fps 
-		static int frameCounter = 0;
-		frameCounter++;
-		if (frameCounter == 10)
-		{
-		std::cout << _fps << std::endl;
-		frameCounter = 0;
-		} */
+		drawGame();		
+		_fps = _fpsLimiter.end();		
 		
 	}
+}
+
+void MainGame::displayFPS()
+{
+	//Use when we need to display fps
+	static int frameCounter = 0;
+	frameCounter++;
+	if (frameCounter == 100)
+	{
+	std::cout << _fps << std::endl;
+	frameCounter = 0;
+	} 
 }
 
 void MainGame::processInput()
@@ -195,9 +186,10 @@ void MainGame::drawGame()
 	glm::vec4 bgPos(-_screenWidth/2,-_screenHeight/2,_screenWidth, _screenHeight);
 	static GLTexture backGroundTexture = ResourceManager::getTexture("Textures/harryPotter/Background/34.png");
 
+	_spriteBatch.draw(bgPos, uv, backGroundTexture.id, -10.0f, color);
 	rahul.draw(_spriteBatch);
 	sid.draw(_spriteBatch);
-	_spriteBatch.draw(bgPos, uv, backGroundTexture.id, -10.0f, color);
+	
 	//std::cout << backGroundTexture.id<<std::endl;
 
 	//characters

@@ -30,6 +30,7 @@ private:
 	void gameLoop();
 	void processInput();
 	void drawGame();
+	void displayFPS();
 	void updateCharacters();
 
 	Window _window;

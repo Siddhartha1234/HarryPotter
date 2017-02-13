@@ -25,7 +25,6 @@ void SpriteBatch::begin(GlyphSortType sortType)
 		delete _glyphs[i];
 	}
 	_glyphs.clear();
-
 }
 void SpriteBatch::end()
 {
@@ -66,7 +65,6 @@ void SpriteBatch::renderBatch()
 		glDrawArrays(GL_TRIANGLES, _renderBatches[i].offset, _renderBatches[i].numVertices);
 	}
 	glBindVertexArray(0);
-
 }
 
 void SpriteBatch::createRenderBatches()
@@ -78,7 +76,7 @@ void SpriteBatch::createRenderBatches()
 		return;
 	int offset = 0;
 	int cv = 0; //current vertex
-	_renderBatches.emplace_back(0, 6, _glyphs[0]->texture);
+	_renderBatches.emplace_back(offset, 6, _glyphs[0]->texture);
 	vertices[cv++] = _glyphs[0]->topLeft;
 	vertices[cv++] = _glyphs[0]->bottomLeft;
 	vertices[cv++] = _glyphs[0]->bottomRight;
@@ -110,7 +108,6 @@ void SpriteBatch::createRenderBatches()
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-
 }
 
 void SpriteBatch::createVertexArray()
@@ -119,9 +116,11 @@ void SpriteBatch::createVertexArray()
 		glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
+	//all the ahead features will be saved with _vao
+
 	if (_vbo == 0)
 		glGenBuffers(1, &_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER,_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER,_vbo);	
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -134,10 +133,9 @@ void SpriteBatch::createVertexArray()
 	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GLU_TRUE, sizeof(Vertex), (void*)offsetof(Vertex, color));
 
 	//This is the UV attribute pointer
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv));	
 
 	glBindVertexArray(0);	
-
 }
 
 void SpriteBatch::sortGlyphs()
