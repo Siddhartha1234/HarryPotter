@@ -7,6 +7,7 @@
 
 
 
+
 Level::Level(const std::string& fileName,int screenWidth,int screenHeight)
 {
 
@@ -28,12 +29,12 @@ Level::Level(const std::string& fileName,int screenWidth,int screenHeight)
 	Color color = { 255,255,255,255 };
 	_spriteBatch.init();
 	_spriteBatch.begin();
-	for (int y = 0; y < _levelData.size(); y++)
+	for (int x = 0; x < _levelData.size(); x++)
 	{
-		for (int x = 0; x < _levelData[y].size(); x++)
+		for (int y = 0; y < _levelData[x].size(); y++)
 		{
-			char tile = _levelData[y][x];
-			glm::vec4 destRect(-screenWidth/2+x*TILE_WIDTH,-screenHeight/2+ y*TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+			char tile = _levelData[x][y];
+			glm::vec4 destRect(x*TILE_WIDTH, y*TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
 			switch (tile)
 			{
 			case 'R':
