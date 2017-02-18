@@ -26,8 +26,8 @@ void MainGame::initSystems()
 	_spriteBatch.init();
 	_fpsLimiter.setMaxFPS(_maxFPS);
 
-	rahul.init("Rahul", glm::vec2(0.0f, 0.0f), 1, glm::vec2(30, 30));
-	sid.init("SID", glm::vec2(60.0f, 0.0f), 0, glm::vec2(30, 30));
+	//rahul.init("Rahul", glm::vec2(0.0f, 0.0f), 1, glm::vec2(30, 30));
+	//sid.init("SID", glm::vec2(60.0f, 0.0f), 0, glm::vec2(30, 30));
 	
 }
 

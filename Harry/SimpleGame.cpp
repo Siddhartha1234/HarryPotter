@@ -4,8 +4,8 @@
 
 
 
-SimpleGame::SimpleGame():_screenWidth(1024),
-						_screenHeight(768),
+SimpleGame::SimpleGame():_screenWidth(1020),
+						_screenHeight(720),
 						_maxFPS(60.0f),
 						_gameState(GameState::PLAY),
 						_fps(0.0f),
@@ -35,12 +35,14 @@ void SimpleGame::initSystems()
 	_window.createWindow("Game Engine", _screenWidth, _screenHeight, 0);
 	initShaders();
 	_camera.init(_screenWidth, _screenHeight);
+	_camera.setScale(4);
 	initialiseLevel(_currentLevel);
 	_spriteBatch.init();
 	_fpsLimiter.setMaxFPS(_maxFPS);
 
-	rahul.init("Rahul", glm::vec2(0.0f,0.0f), 1,glm::vec2(20,20));
-	sid.init("SID", glm::vec2(60.0f, 0.0f), 0, glm::vec2(20, 20));
+
+	rahul.init("Rahul", glm::vec2(80.0f,80.0f), 0,glm::vec2(15,15),1,_levels[_currentLevel]->getLevelData());
+	sid.init("SID", glm::vec2(100.0f, 100.0f), 2, glm::vec2(15, 15),1, _levels[_currentLevel]->getLevelData());
 }
 
 void SimpleGame::initialiseLevel(int level)
@@ -72,6 +74,7 @@ void SimpleGame::gameLoop()
 		_fpsLimiter.begin();
 
 		processInput();
+		_camera.setPosition(rahul.getPosition());
 		_camera.update();
 		drawGame();
 
@@ -124,9 +127,8 @@ void SimpleGame::processInput()
 		rahul.moveRIGHT();
 	if (_inputManager.isKeyPressed(SDLK_q))
 		_camera.setScale(_camera.getScale() + SCALE_SPEED);
-
 	if (_inputManager.isKeyPressed(SDLK_e))
-		_camera.setScale(_camera.getScale() - SCALE_SPEED); 
+		_camera.setScale(_camera.getScale() - SCALE_SPEED);
 }
 
 void SimpleGame::drawGame()

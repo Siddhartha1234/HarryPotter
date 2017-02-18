@@ -10,6 +10,7 @@ public:
 	~Level();
 
 	void draw();
+	std::vector<std::string> getLevelData() { return _levelData; }
 
 private:
 	std::vector<std::string> _levelData;
