@@ -47,7 +47,7 @@ void SimpleGame::initSystems()
 
 void SimpleGame::initialiseLevel(int level)
 {
-	_levels.push_back(new Level("Levels/level" + std::to_string(level+1) + ".txt", _screenWidth, _screenHeight));
+	_levels.push_back(new Level("../Harry/Levels/level" + std::to_string(level+1) + ".txt", _screenWidth, _screenHeight));
 }
 
 void SimpleGame::initialiseSDL()
@@ -60,7 +60,7 @@ void SimpleGame::initialiseSDL()
 
 void SimpleGame::initShaders()
 {
-	_textureProgram.compileShaders("Shaders/colorShading.vert", "Shaders/colorShading.frag");
+	_textureProgram.compileShaders("../Harry/Shaders/colorShading.vert", "../Harry/Shaders/colorShading.frag");
 	_textureProgram.addAttribute("vertexPosition");
 	_textureProgram.addAttribute("vertexColor");
 	_textureProgram.addAttribute("vertexUV");

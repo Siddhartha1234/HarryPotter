@@ -35,6 +35,6 @@ private:
 	int _speed;
 	std::vector<std::string> _levelData;
 
-	std::string _filePaths[6] = {"Textures/harryPotter/Harry/harry.png","Textures/harryPotter/Ron/ron.png","Textures/harryPotter/Hermoine/hermoine.png","Textures/harryPotter/Ginny/ginny.png","Textures/harryPotter/Malfoy/malfoy.png","Textures/harryPotter/Luna/luna.png" };
+	std::string _filePaths[6] = {"../Harry/Textures/harryPotter/Harry/harry.png","../Harry/Textures/harryPotter/Ron/ron.png","../Harry/Textures/harryPotter/Hermoine/hermoine.png","../Harry/Textures/harryPotter/Ginny/ginny.png","../Harry/Textures/harryPotter/Malfoy/malfoy.png","../Harry/Textures/harryPotter/Luna/luna.png" };
 };
 

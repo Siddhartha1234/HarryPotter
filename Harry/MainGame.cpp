@@ -42,7 +42,7 @@ void MainGame::initialiseSDL()
 
 void MainGame::initShaders()
 {
-	_colorProgram.compileShaders("Shaders/colorShading.vert", "Shaders/colorShading.frag");
+	_colorProgram.compileShaders("../Harry/Shaders/colorShading.vert", "../Harry/Shaders/colorShading.frag");
 	_colorProgram.addAttribute("vertexPosition");
 	_colorProgram.addAttribute("vertexColor");
 	_colorProgram.addAttribute("vertexUV");
@@ -184,7 +184,7 @@ void MainGame::drawGame()
 
 	//Background
 	glm::vec4 bgPos(-_screenWidth/2,-_screenHeight/2,_screenWidth, _screenHeight);
-	static GLTexture backGroundTexture = ResourceManager::getTexture("Textures/harryPotter/Background/34.png");
+	static GLTexture backGroundTexture = ResourceManager::getTexture("../Harry/Textures/harryPotter/Background/34.png");
 
 	_spriteBatch.draw(bgPos, uv, backGroundTexture.id, -10.0f, color);
 	rahul.draw(_spriteBatch);

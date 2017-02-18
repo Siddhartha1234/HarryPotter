@@ -1,8 +1,10 @@
 #pragma once
 #ifdef _WIN32
 // Windows
+#define _WINSOCK_DEPRECATED_NO_WARNINGS 1
 #include <WinSock2.h>
 typedef SOCKET NetSocketId;
+
 #define NET_INVALID_SOCKET_ID INVALID_SOCKET
 #define NET_SOCKET_ERROR      SOCKET_ERROR
 #else // !_WIN32

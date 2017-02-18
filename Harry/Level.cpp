@@ -11,9 +11,9 @@
 Level::Level(const std::string& fileName,int screenWidth,int screenHeight)
 {
 
-	static int redTexid = ResourceManager::getTexture("Textures/red_bricks.png").id;
-	static int glassTexid = ResourceManager::getTexture("Textures/glass.png").id;
-	static int lightTexid = ResourceManager::getTexture("Textures/light_bricks.png").id;
+	static int redTexid = ResourceManager::getTexture("../Harry/Textures/red_bricks.png").id;
+	static int glassTexid = ResourceManager::getTexture("../Harry/Textures/glass.png").id;
+	static int lightTexid = ResourceManager::getTexture("../Harry/Textures/light_bricks.png").id;
 	std::ifstream file;
 	file.open(fileName);
 
