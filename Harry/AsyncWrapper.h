@@ -3,12 +3,13 @@
 #include <functional>
 #include <type_traits>
 #include <utility>
-template <class Fn , class... ArgTypes> class AsyncWrapper
+template <class Fn, class... ArgTypes> class AsyncWrapper
 {
 public:
-	AsyncWrapper();
+	AsyncWrapper(int size);
 	~AsyncWrapper();
-	void addAsyncTask(Fn && fn, ArgTypes&&... args);
+	
+	void addAsyncTask(Fn && fn, int i,ArgTypes&&... args);
 	typename std::result_of<Fn(ArgTypes...)>::type getAsyncData(int i);
 
 private:

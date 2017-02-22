@@ -1,26 +1,26 @@
 #include "AsyncWrapper.h"
 
 template <class Fn, class... ArgTypes> 
-AsyncWrapper<Fn,ArgTypes...>::AsyncWrapper()
+AsyncWrapper<Fn, ArgTypes...> ::AsyncWrapper(int size)
 {
-
+	futures.reserve(size);
 }
 
 
 template <class Fn, class... ArgTypes> 
-AsyncWrapper<Fn,ArgTypes...>::~AsyncWrapper()
+AsyncWrapper<Fn,ArgTypes...> ::~AsyncWrapper()
 {
 
 }
 
 template <class Fn, class... ArgTypes> 
-void AsyncWrapper<Fn,ArgTypes...>::addAsyncTask(Fn && fn , ArgTypes&&... args)
+void AsyncWrapper<Fn, ArgTypes...>::addAsyncTask(Fn && fn , int i ,ArgTypes&&... args)
 {
-	futures.push_back(std::async(std::launch::async ,fn,args));
+	futures[i] = (std::async(std::launch::async ,fn,args));
 }
 
 template <class Fn, class... ArgTypes> 
-typename std::result_of<Fn(ArgTypes...)>::type  AsyncWrapper<Fn,ArgTypes...>::getAsyncData(int i)
+typename std::result_of<Fn(ArgTypes...)>::type AsyncWrapper<Fn, ArgTypes...>::getAsyncData(int i)
 {
 	return futures[i].get();
 }

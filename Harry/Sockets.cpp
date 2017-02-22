@@ -2,8 +2,21 @@
 #include <iostream>
 #ifdef _MSC_VER
 #pragma comment(lib, "Ws2_32.lib")
+#pragma comment (lib, "Mswsock.lib")
+#pragma comment (lib, "AdvApi32.lib")
+
 #endif
 
+Socket::Socket() {
+
+}
+Socket::~Socket() {
+}
+Socket::Socket(size_t MAX_SIZE)
+{
+	MAX_BUFFER_SIZE = MAX_SIZE;
+
+}
 sockError::sockError(const std::string & message) {
 	#ifdef _WIN32
 		std::runtime_error(message + std::string(" | sys error: ") + std::to_string(WSAGetLastError()));
@@ -12,55 +25,13 @@ sockError::sockError(const std::string & message) {
 	#endif // _WIN32
 }
 
-Socket::Socket()
+
+void socketClient::receiveBytes(void *buffer)
 {
-	socketId = socket(AF_INET, SOCK_STREAM, /* protocol = */ 0);
-	if (socketId == NET_INVALID_SOCKET_ID)
-	{
-		throw sockError("Failed to create socket with 'socket(AF_INET, SOCK_STREAM, 0)'!");
-	}
-
-}
-
-Socket::Socket(const NetSocketId sid)
-	: socketId(NET_INVALID_SOCKET_ID)
-{
-	socketId = sid;
-}
-
-void Socket::Close()
-{
-	if (socketId != NET_INVALID_SOCKET_ID)
-	{
-		int result;
-
-		#ifdef _WIN32
-			result = closesocket(socketId);
-		#else // !_WIN32
-			result = close(socketId);
-		#endif // _WIN32
-
-		if (result == 0)
-		{
-			std::cout<<"Closed socket connection"<<std::endl;
-		}
-		else
-		{
-			std::cout<<("Failed to close a socket")<<std::endl;
-		}
-
-		socketId = NET_INVALID_SOCKET_ID;
-	}
-}
-
-void Socket::receiveBytes(void	*buffer, size_t numBytes)
-{
-	if(socketId == NET_INVALID_SOCKET_ID)
-		throw sockError("Invalid Socket ID");
 	if(buffer == nullptr)
 		return;
 	
-	long res = recv(socketId,(char *) buffer, numBytes, 0);
+	long res = recv(ConnectSocket,(char *) buffer, MAX_BUFFER_SIZE, 0);
 	
 	if (res == NET_SOCKET_ERROR)
 	{
@@ -69,13 +40,29 @@ void Socket::receiveBytes(void	*buffer, size_t numBytes)
 	
 }
 
-void Socket::sendBytes(void *buffer, size_t numBytes)
+
+void socketServer::sendBytes(SOCKET & clientSocket,void *buffer)
 {
-	if (socketId == NET_INVALID_SOCKET_ID)
-		throw sockError("Invalid Socket ID");
 	if (buffer == nullptr)
 		return;
-	long res = send(socketId, (char *)buffer, numBytes, 0);
+
+	long res = send(clientSocket, (char *)buffer, MAX_BUFFER_SIZE, 0);
+
+	if (res == NET_SOCKET_ERROR)
+	{
+		closesocket(clientSocket);
+		WSACleanup();
+		throw sockError("Failed to send! (NET_SOCKET_ERROR)");
+	}
+
+
+}
+
+void socketClient::sendBytes(void *buffer)
+{
+	if (buffer == nullptr)
+		return;
+	long res = send(ConnectSocket, (char *)buffer, MAX_BUFFER_SIZE, 0);
 
 	if (res == NET_SOCKET_ERROR)
 	{
@@ -84,113 +71,254 @@ void Socket::sendBytes(void *buffer, size_t numBytes)
 
 }
 
-Socket::~Socket()
+socketClient::socketClient(std::string &host, std::string & port, size_t MAX_BUFFER_SIZE ) : Socket(MAX_BUFFER_SIZE)
 {
-	Close();
-}
-
-
-socketClient::socketClient(std::string &host, const u_short & port)
-{
-	if (socketId == NET_INVALID_SOCKET_ID)
-		throw sockError("Invalid Socket ID");
-	
 	if (host.empty())
 	{
 		std::cout << "Host should not be empty" << std::endl;
 	}
+	struct addrinfo *result = NULL,*ptr = NULL,hints;
 		
-	sockaddr_in addr;
-	std::memset(&addr, 0, sizeof(addr));
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
 
-	hostent * hostEntity;
-	if (isdigit(host[0])) {
-		//addr.sin_addr.s_addr = inet_addr(host.c_str());
-		hostEntity = gethostbyaddr((char const *)&addr, sizeof(addr), AF_INET);
+	int iResult = getaddrinfo(host.c_str(), port.c_str(), &hints, &result);
+	if (iResult != 0) {
+		printf("getaddrinfo failed with error: %d\n", iResult);
+		WSACleanup();
+		exit(WSAGetLastError());
 	}
-	else
-		hostEntity = gethostbyname(host.c_str());
-	if (hostEntity == nullptr)
-	{
-		Close();
-		throw sockError("Failed to get hostent for " + host);
+	for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
+
+		// Create a SOCKET for connecting to server
+		ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype,
+			ptr->ai_protocol);
+		if (ConnectSocket == INVALID_SOCKET) {
+			printf("socket failed with error: %ld\n", WSAGetLastError());
+			WSACleanup();
+			exit(WSAGetLastError());
+		}
+
+		// Connect to server.
+		iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		if (iResult == SOCKET_ERROR) {
+			closesocket(ConnectSocket);
+			ConnectSocket = INVALID_SOCKET;
+			continue;
+		}
+		break;
 	}
 
+	freeaddrinfo(result);
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr = *reinterpret_cast<in_addr *>(hostEntity->h_addr);
-
-
-	if (connect(socketId, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) != 0)
-	{
-		Close();
-		throw sockError("Failed to connect with host " + host +
-			" at port #" + std::to_string(port));
+	if (ConnectSocket == INVALID_SOCKET) {
+		printf("Unable to connect to server!\n");
+		WSACleanup();
+		exit(WSAGetLastError());
 	}
+
 }
 
-socketServer::socketServer(const u_short & port, int pending, Socket::ConnectionType connType)
+socketServer::socketServer(std:: string  & port, int MAX_CONN, Socket::ConnectionType connType) : Socket(MAX_BUFFER_SIZE)
 {
-	if (socketId == NET_INVALID_SOCKET_ID)
-		throw sockError("Invalid Socket ID");
+	max_clients = MAX_CONN;
+	clients = new SOCKET[max_clients];
+	for (int i = 0; i < max_clients; i++)
+		clients[i] = 0;
+	collectedData.reserve(max_clients);
+	std::fill(collectedData.begin(), collectedData.end(), "-1");
+	flag.reserve(max_clients);
+	std::fill(flag.begin(), flag.end(), false);
+	
+	struct addrinfo *result = NULL;
+	struct addrinfo hints;
 
-	sockaddr_in addr;
-	std::memset(&addr, 0, sizeof(addr));
 
-	addr.sin_family = PF_INET;
-	addr.sin_port = htons(port);
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags = AI_PASSIVE;
+
+	// Resolve the server address and port
+	int iResult = getaddrinfo(NULL, port.c_str(), &hints, &result);
+	if (iResult != 0) {
+		printf("getaddrinfo failed with error: %d\n", iResult);
+		WSACleanup();
+		exit(iResult);
+	}
+
+	// Create a SOCKET for connecting to server
+	master= socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	if ((master = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
+	{
+		printf("Could not create socket : %d", WSAGetLastError());
+		//exit(EXIT_FAILURE);
+	}
+
+	printf("Socket created.\n");
+
 	if (connType == Socket::ConnectionType::NonBlocking)
 	{
 		#ifdef _WIN32
 			u_long arg = 1;
-			ioctlsocket(socketId, FIONBIO, &arg);
+			ioctlsocket(master, FIONBIO, &arg);
 		#else // !_WIN32
 			fcntl(socketId, F_SETFL, O_NONBLOCK);
 		#endif // _WIN32
 	}
+	
+	if (bind(master, result->ai_addr, (int)result->ai_addrlen) == SOCKET_ERROR)
+	{
+		printf("Bind failed with error code : %d", WSAGetLastError());
+		exit(EXIT_FAILURE);
+	}
 
 	// Bind server to the port and start listening at it:
-	
-	if (bind(socketId, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) != 0)
-	{
-		Close();
-		throw sockError("Failed to 'bind()' socket to port #" +
-			std::to_string(port));
-	}
-
-	if (listen(socketId, pending) != 0)
-	{
-		Close();
-		throw sockError("Failed to 'listen()' at port #" +
-			std::to_string(port));
-	}
-
+	listen(master, 5);
 }
-socketPtr socketServer::acceptConnection()
+
+void socketServer::select_activity()
 {
-	if (socketId == NET_INVALID_SOCKET_ID)
-		throw sockError("Invalid Socket ID");
-	errno = 0;
-	const NetSocketId newSocket = accept(socketId, nullptr, nullptr);
-	if (newSocket == NET_INVALID_SOCKET_ID)
+	int activity, addrlen, i, valread;
+	SOCKET s,new_socket;
+	char *message = "New connection established \n";
+	addrlen = sizeof(struct sockaddr_in);
+	while (TRUE)
 	{
-		// Non-blocking call / no request pending
-		#ifdef _WIN32
-			if (WSAGetLastError() == WSAEWOULDBLOCK)
-			{
-				return nullptr;
-			}
-		#else // !_WIN32
-			if (errno == EAGAIN)
-			{
-				return nullptr;
-			}
-		#endif // _WIN32
+		//clear the socket fd set
+		FD_ZERO(&readfds);
 
-		throw sockError("'accept()' failed with an invalid socketId!");
+		//add master socket to fd set
+		FD_SET(master, &readfds);
+
+		//add child sockets to fd set
+		for (i = 0; i < max_clients; i++)
+		{
+			s = clients[i];
+			if (s > 0)
+			{
+				FD_SET(s, &readfds);
+			}
+		}
+
+		//wait for an activity on any of the sockets, timeout is NULL , so wait indefinitely
+		activity = select(0, &readfds, NULL, NULL, NULL);
+
+		if (activity == SOCKET_ERROR)
+		{
+			printf("select call failed with error code : %d", WSAGetLastError());
+			exit(EXIT_FAILURE);
+		}
+
+		//If something happened on the master socket , then its an incoming connection
+		if (FD_ISSET(master, &readfds))
+		{
+			if ((new_socket = accept(master, (struct sockaddr *)&address, (int *)&addrlen))<0)
+			{
+				perror("accept");
+				exit(EXIT_FAILURE);
+			}
+
+			//inform user of socket number - used in send and receive commands
+			printf("New connection , socket fd is %d , ip is : %s , port : %d \n", new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+
+			//send new connection greeting message
+			sendBytes(new_socket, message);
+
+			puts("Welcome message sent successfully");
+
+			//add new socket to array of sockets
+			for (i = 0; i < max_clients; i++)
+			{
+				if (clients[i] == 0)
+				{
+					clients[i] = new_socket;
+					printf("Adding to list of sockets at index %d \n", i);
+					break;
+				}
+			}
+		}
+
+		//else its some IO operation on some other socket :)
+		for (i = 0; i < max_clients; i++)
+		{
+			s = clients[i];
+			//if client presend in read sockets             
+			if (FD_ISSET(s, &readfds))
+			{
+				//get details of the client
+				getpeername(s, (struct sockaddr*)&address, (int*)&addrlen);
+
+				//Check if it was for closing , and also read the incoming message
+				//recv does not place a null terminator at the end of the string (whilst printf %s assumes there is one).
+				valread = recv(s, buffer, MAX_BUFFER_SIZE, 0);
+
+				if (valread == SOCKET_ERROR)
+				{
+					int error_code = WSAGetLastError();
+					if (error_code == WSAECONNRESET)
+					{
+						//Somebody disconnected , get his details and print
+						printf("Host disconnected unexpectedly , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+
+						//Close the socket and mark as 0 in list for reuse
+						closesocket(s);
+						clients[i] = 0;
+					}
+					else
+					{
+						printf("recv failed with error code : %d", error_code);
+					}
+				}
+				if (valread == 0)
+				{
+					//Somebody disconnected , get his details and print
+					printf("Host disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
+
+					//Close the socket and mark as 0 in list for reuse
+					closesocket(s);
+					clients[i] = 0;
+				}
+
+				//Echo back the message that came in
+				else
+				{
+					//add null character, if you want to use with printf/puts or other string handling functions
+					collectedData[i] = std::string(buffer);
+					flag[i] = true;
+					buffer[valread] = '\0';
+
+					printf("%s:%d - %s \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port), buffer);
+					//send(s, buffer, valread, 0);
+				}
+			}
+		}
+
+		if (std::all_of(flag.begin(), flag.end(), [](bool v) { return v; }))
+		{
+			std::string collectedString;
+			for (int i = 0; i < max_clients; i++)
+				collectedString += collectedData[i];
+			for (int i = 0; i < max_clients; i++)
+			{
+				if (clients[i] != 0)
+				{
+					long res = send(clients[i], collectedString.c_str(), MAX_BUFFER_SIZE, 0);
+
+					if (res == NET_SOCKET_ERROR)
+					{
+						closesocket(clients[i]);
+						WSACleanup();
+						throw sockError("Failed to send! (NET_SOCKET_ERROR)");
+					}
+				}
+			}
+			std::cout << "Sent data packets to every client" << std::endl;
+		}
+		
 	}
-
-	return socketPtr(new Socket(newSocket));
 
 }
