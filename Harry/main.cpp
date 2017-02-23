@@ -3,6 +3,8 @@
 #include <iostream>
 #include "Sockets.h"
 #include <thread>
+#include <vector>
+#include "player.h"
 //#include "MainGame.h"
 
 int main(int argc, char** argv)
@@ -22,7 +24,7 @@ int main(int argc, char** argv)
 		int clients;
 		std::cout << "Enter number of Clients" << std::endl;
 		std::cin >> clients;
-		socketServer server(SOCK_PORT,clients, Socket::ConnectionType::Blocking);
+		socketServer server(SOCK_PORT,clients, Socket::ConnectionType::NonBlocking,2048);
 		sockThread =  std::thread(&socketServer::select_activity, server);
 	}
 	else if (choice == 2)
@@ -31,9 +33,16 @@ int main(int argc, char** argv)
 		std::string ip;
 		std::cin >> ip;
 		socketClient client(ip, SOCK_PORT, 2048);
-	}
-	SimpleGame mainGame;
-	mainGame.run();
+		char input[1000];
+		client.receiveBytes(input);
+		std::cout << input;
+		client.receiveBytes(input);
+		int noOfPlayers = 5;
+		int indexOfClient = 1;
+		std::vector<Player> players;
+		SimpleGame mainGame(noOfPlayers,indexOfClient,players);
+		mainGame.run();
+	}	
 	sockThread.join();
 	return 0;
 }

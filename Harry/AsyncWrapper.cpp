@@ -3,7 +3,7 @@
 template <class Fn, class... ArgTypes> 
 AsyncWrapper<Fn, ArgTypes...> ::AsyncWrapper(int size)
 {
-	futures.reserve(size);
+	futures.resize(size);
 }
 
 

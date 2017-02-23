@@ -10,6 +10,7 @@
 #include "Level.h"
 #include "Camera2D.h"
 #include "Bullet.h"
+#include "player.h"
 
 
 enum class GameState { PLAY, EXIT };
@@ -17,7 +18,7 @@ enum class GameState { PLAY, EXIT };
 class SimpleGame
 {
 public:
-	SimpleGame();
+	SimpleGame(int noOfPlayers,int currentIndex, const std::vector<Player>& players);
 	~SimpleGame();
 	void run();
 
@@ -55,8 +56,11 @@ private:
 	std::vector<Bullet> m_bullets;
 
 	glm::vec2 m_playerDim, m_bulletDim;
-	//std::vector<Character*> m_chars;
-	Character m_mainPlayer, sid;
+	std::vector<Character> m_chars;
+	Character* m_mainPlayer;
 	int m_bulletTexID;
+
+	int m_noOfPlayers, m_currentIndex;
+	std::vector<Player> m_players;
 };
 

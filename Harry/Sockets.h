@@ -56,8 +56,8 @@ protected:
 class socketClient : public Socket {
 public:
 	socketClient(std::string & host, std::string & port, size_t max_size);
-	void sendBytes(void * buffer);
-	void receiveBytes(void *receiveBuffer);
+	void sendBytes(char * buffer);
+	void receiveBytes(char *receiveBuffer);
 private:
 	std::string host;
 	u_short port;
@@ -67,9 +67,9 @@ private:
 
 class socketServer : public Socket {
 public:
-	socketServer(std::string  & port,int MAX_CONN,Socket::ConnectionType connType);
+	socketServer(std::string  & port,int MAX_CONN,Socket::ConnectionType connType,size_t MAX);
 	void select_activity();
-	void socketServer::sendBytes(SOCKET &newSocket, void *buffer);
+	void socketServer::sendBytes(SOCKET &newSocket, char *buffer);
 private :
 	SOCKET master;
 	SOCKET * clients;

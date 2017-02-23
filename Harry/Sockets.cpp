@@ -26,12 +26,12 @@ sockError::sockError(const std::string & message) {
 }
 
 
-void socketClient::receiveBytes(void *buffer)
+void socketClient::receiveBytes(char *buffer)
 {
 	if(buffer == nullptr)
 		return;
 	
-	long res = recv(ConnectSocket,(char *) buffer, MAX_BUFFER_SIZE, 0);
+	long res = recv(ConnectSocket, buffer, MAX_BUFFER_SIZE, 0);
 	
 	if (res == NET_SOCKET_ERROR)
 	{
@@ -41,28 +41,26 @@ void socketClient::receiveBytes(void *buffer)
 }
 
 
-void socketServer::sendBytes(SOCKET & clientSocket,void *buffer)
+void socketServer::sendBytes(SOCKET & clientSocket,char *buffer)
 {
 	if (buffer == nullptr)
 		return;
-
-	long res = send(clientSocket, (char *)buffer, MAX_BUFFER_SIZE, 0);
-
+	long res = send(clientSocket,buffer, strlen(buffer), 0);
 	if (res == NET_SOCKET_ERROR)
 	{
 		closesocket(clientSocket);
 		WSACleanup();
 		throw sockError("Failed to send! (NET_SOCKET_ERROR)");
 	}
-
+	std::cout << strlen((char *)buffer) << "Bytes sent" << std::endl;
 
 }
 
-void socketClient::sendBytes(void *buffer)
+void socketClient::sendBytes(char *buffer)
 {
 	if (buffer == nullptr)
 		return;
-	long res = send(ConnectSocket, (char *)buffer, MAX_BUFFER_SIZE, 0);
+	long res = send(ConnectSocket, buffer, strlen(buffer), 0);
 
 	if (res == NET_SOCKET_ERROR)
 	{
@@ -121,16 +119,17 @@ socketClient::socketClient(std::string &host, std::string & port, size_t MAX_BUF
 
 }
 
-socketServer::socketServer(std:: string  & port, int MAX_CONN, Socket::ConnectionType connType) : Socket(MAX_BUFFER_SIZE)
+socketServer::socketServer(std:: string  & port, int MAX_CONN, Socket::ConnectionType connType,size_t MAX) : Socket(MAX)
 {
 	max_clients = MAX_CONN;
 	clients = new SOCKET[max_clients];
 	for (int i = 0; i < max_clients; i++)
 		clients[i] = 0;
-	collectedData.reserve(max_clients);
+	collectedData.resize(max_clients);
 	std::fill(collectedData.begin(), collectedData.end(), "-1");
-	flag.reserve(max_clients);
+	flag.resize(max_clients);
 	std::fill(flag.begin(), flag.end(), false);
+	buffer = new char[MAX_BUFFER_SIZE];
 	
 	struct addrinfo *result = NULL;
 	struct addrinfo hints;
@@ -184,7 +183,7 @@ void socketServer::select_activity()
 {
 	int activity, addrlen, i, valread;
 	SOCKET s,new_socket;
-	char *message = "New connection established \n";
+	char *message = "New connection \0 \n";
 	addrlen = sizeof(struct sockaddr_in);
 	while (TRUE)
 	{
@@ -255,7 +254,7 @@ void socketServer::select_activity()
 				//Check if it was for closing , and also read the incoming message
 				//recv does not place a null terminator at the end of the string (whilst printf %s assumes there is one).
 				valread = recv(s, buffer, MAX_BUFFER_SIZE, 0);
-
+				std::cout << buffer << std::endl;
 				if (valread == SOCKET_ERROR)
 				{
 					int error_code = WSAGetLastError();
@@ -267,13 +266,14 @@ void socketServer::select_activity()
 						//Close the socket and mark as 0 in list for reuse
 						closesocket(s);
 						clients[i] = 0;
+						flag[i] = 0;
 					}
 					else
 					{
 						printf("recv failed with error code : %d", error_code);
 					}
 				}
-				if (valread == 0)
+				else if (valread == 0)
 				{
 					//Somebody disconnected , get his details and print
 					printf("Host disconnected , ip %s , port %d \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port));
@@ -281,22 +281,25 @@ void socketServer::select_activity()
 					//Close the socket and mark as 0 in list for reuse
 					closesocket(s);
 					clients[i] = 0;
+					//flag[i] = 0;
 				}
 
 				//Echo back the message that came in
 				else
 				{
 					//add null character, if you want to use with printf/puts or other string handling functions
-					collectedData[i] = std::string(buffer);
+					
 					flag[i] = true;
 					buffer[valread] = '\0';
-
+					collectedData[i] = std::string(buffer);
 					printf("%s:%d - %s \n", inet_ntoa(address.sin_addr), ntohs(address.sin_port), buffer);
 					//send(s, buffer, valread, 0);
 				}
 			}
 		}
-
+		for (int i = 0; i < max_clients; i++)
+			if (flag[i]) std::cout << "1\n" ;
+			else std::cout << "0\n";
 		if (std::all_of(flag.begin(), flag.end(), [](bool v) { return v; }))
 		{
 			std::string collectedString;
@@ -306,7 +309,7 @@ void socketServer::select_activity()
 			{
 				if (clients[i] != 0)
 				{
-					long res = send(clients[i], collectedString.c_str(), MAX_BUFFER_SIZE, 0);
+					long res = send(clients[i], collectedString.c_str(), strlen(collectedString.c_str()), 0);
 
 					if (res == NET_SOCKET_ERROR)
 					{

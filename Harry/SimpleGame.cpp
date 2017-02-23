@@ -5,7 +5,7 @@
 
 
 
-SimpleGame::SimpleGame():m_screenWidth(1020),
+SimpleGame::SimpleGame(int noOfPlayers, int currentIndex, const std::vector<Player>& players):m_screenWidth(1020),
 						m_screenHeight(720),
 						m_maxFPS(60.0f),
 						m_gameState(GameState::PLAY),
@@ -14,6 +14,9 @@ SimpleGame::SimpleGame():m_screenWidth(1020),
 {
 	m_playerDim = glm::vec2(15.0f, 15.0f);
 	m_bulletDim = glm::vec2(5.0f, 5.0f);
+	m_noOfPlayers = noOfPlayers;
+	m_currentIndex = currentIndex;
+	m_players = players;
 }
 
 
@@ -43,17 +46,23 @@ void SimpleGame::initSystems()
 	m_spriteBatch.init();
 	m_fpsLimiter.setMaxFPS(m_maxFPS);
 
+
+	for (int i = 0; i < m_noOfPlayers; i++)
+	{
+		m_chars.emplace_back(m_players[i].name, m_players[i].position, m_players[i].playerIndex, m_playerDim, 1, m_leveldata);
+	}
+
 	m_leveldata = m_levels[m_currentLevel]->getLevelData();
-	m_mainPlayer.init("Rahul", glm::vec2(80.0f,80.0f), 0,glm::vec2(15,15),1, m_leveldata);
-	sid.init("SID", glm::vec2(100.0f, 100.0f), 2, glm::vec2(15, 15),1, m_leveldata);
+	m_mainPlayer = &( m_chars[m_currentIndex]);
+	//sid.init("SID", glm::vec2(100.0f, 100.0f), 2, glm::vec2(15, 15),1, m_leveldata);
 	//m_chars.push_back(&sid);
 	m_bulletTexID = ResourceManager::getTexture("../Harry/Textures/bullet.png").id;
 	Gun magnum(30, 1, 0.1f, 30, 4.0f, 100, m_bulletTexID); //int fireRate, int bulletsPerShot, float spread,int damage,float speed,int lifeTime,int bulletTex
 	Gun shotgun(40, 20, 0.3f, 4, 4.0f, 100, m_bulletTexID);
 	Gun mp5(5, 1, 0.2f, 20, 4.0f, 100, m_bulletTexID);
-	m_mainPlayer.addGun(magnum);
-	m_mainPlayer.addGun(shotgun);
-	m_mainPlayer.addGun(mp5);
+	m_mainPlayer->addGun(magnum);
+	m_mainPlayer->addGun(shotgun);
+	m_mainPlayer->addGun(mp5);
 }
 
 void SimpleGame::initialiseLevel(int level)
@@ -83,13 +92,14 @@ void SimpleGame::gameLoop()
 	while (m_gameState != GameState::EXIT)
 	{
 		m_fpsLimiter.begin();
-
+		//updatePlayerVector
 		processInput();
-		m_camera.setPosition(m_mainPlayer.getPosition());
+		m_camera.setPosition(m_mainPlayer->getPosition());
 		m_camera.update();
 		updateChars();
 		updateBullets();
 		drawGame();
+		//sendPlayerData
 
 		m_fps = m_fpsLimiter.end();
 		//displayFPS();
@@ -97,31 +107,33 @@ void SimpleGame::gameLoop()
 }
 void SimpleGame::updateChars()
 {
-	m_mainPlayer.update();
-
+	m_mainPlayer->update();
 }
 
 void SimpleGame::updateBullets()
 {
-	for (unsigned int i = 0; i < m_bullets.size(); )
+	for (int j = 0; j < m_noOfPlayers; j++)
 	{
-		glm::vec2 bulPos = m_bullets[i].getPosition();
-		glm::vec2 playerPos=sid.getPosition();
-		if(abs(bulPos.x-playerPos.x)<(m_playerDim.x/2+m_bulletDim.x/2) && 
-			abs(bulPos.y - playerPos.y) < (m_playerDim.y / 2 + m_bulletDim.y / 2))
+		for (unsigned int i = 0; i < m_bullets.size(); )
 		{
-			sid.damageTaken(m_bullets[i].getDamage());
-			m_bullets[i] = m_bullets.back();
-			m_bullets.pop_back();
-			continue;
+			glm::vec2 bulPos = m_bullets[i].getPosition();
+			glm::vec2 playerPos = m_chars[j].getPosition();
+			if (abs(bulPos.x - playerPos.x) < (m_playerDim.x / 2 + m_bulletDim.x / 2) &&
+				abs(bulPos.y - playerPos.y) < (m_playerDim.y / 2 + m_bulletDim.y / 2))
+			{
+				m_chars[j].damageTaken(m_bullets[i].getDamage());
+				m_bullets[i] = m_bullets.back();
+				m_bullets.pop_back();
+				continue;
+			}
+			if (m_bullets[i].update(m_leveldata))
+			{
+				m_bullets[i] = m_bullets.back();
+				m_bullets.pop_back();
+			}
+			else
+				i++;
 		}
-		if (m_bullets[i].update(m_leveldata))
-		{
-			m_bullets[i] = m_bullets.back();
-			m_bullets.pop_back();
-		}
-		else
-			i++;
 	}
 }
 
@@ -154,28 +166,17 @@ void SimpleGame::processInput()
 				break;
 		}
 	}
-	if (m_inputManager.isKeyPressed(SDLK_w))
-		sid.moveUP();
-	if (m_inputManager.isKeyPressed(SDLK_s))
-		sid.moveDOWN();
-
-	if (m_inputManager.isKeyPressed(SDLK_a))
-		sid.moveLEFT();
-
-	if (m_inputManager.isKeyPressed(SDLK_d))
-		sid.moveRIGHT();
-
 	if (m_inputManager.isKeyPressed(SDLK_UP))
-		m_mainPlayer.moveUP();
+		m_mainPlayer->moveUP();
 
 	if (m_inputManager.isKeyPressed(SDLK_DOWN))
-		m_mainPlayer.moveDOWN();
+		m_mainPlayer->moveDOWN();
 
 	if (m_inputManager.isKeyPressed(SDLK_LEFT))
-		m_mainPlayer.moveLEFT();
+		m_mainPlayer->moveLEFT();
 
 	if (m_inputManager.isKeyPressed(SDLK_RIGHT))
-		m_mainPlayer.moveRIGHT();
+		m_mainPlayer->moveRIGHT();
 
 	if (m_inputManager.isKeyPressed(SDLK_q))
 		m_camera.setScale(m_camera.getScale() + SCALE_SPEED);
@@ -184,24 +185,24 @@ void SimpleGame::processInput()
 
 	if (m_inputManager.isKeyPressed(SDL_BUTTON_LEFT))
 	{
-		glm::vec2 direction = m_camera.convertScreenToWorld(m_inputManager.getMouseCoords()) - m_mainPlayer.getPosition();
+		glm::vec2 direction = m_camera.convertScreenToWorld(m_inputManager.getMouseCoords()) - m_mainPlayer->getPosition();
 		direction = glm::normalize(direction);
-		m_mainPlayer.shoot(direction, m_bullets);
+		m_mainPlayer->shoot(direction, m_bullets);
 	}
 	else
-		m_mainPlayer.stopShoot();
+		m_mainPlayer->stopShoot();
 
 	if (m_inputManager.isKeyPressed(SDLK_1))
 	{
-		m_mainPlayer.selectGun(0);
+		m_mainPlayer->selectGun(0);
 	}
 	if (m_inputManager.isKeyPressed(SDLK_2))
 	{
-		m_mainPlayer.selectGun(1);
+		m_mainPlayer->selectGun(1);
 	}
 	if (m_inputManager.isKeyPressed(SDLK_3))
 	{
-		m_mainPlayer.selectGun(2);
+		m_mainPlayer->selectGun(2);
 	}
 }
 
@@ -240,8 +241,11 @@ void SimpleGame::drawGame()
 	{
 		m_bullets[i].draw(m_spriteBatch);
 	}
-	m_mainPlayer.draw(m_spriteBatch);
-	sid.draw(m_spriteBatch);
+	
+	for (size_t i = 0; i < m_noOfPlayers; i++)
+	{
+		m_chars[i].draw(m_spriteBatch);
+	}
 	
 	m_spriteBatch.end();
 	m_spriteBatch.renderBatch(); 	
