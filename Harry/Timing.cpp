@@ -6,19 +6,19 @@ FpsLimiter::FpsLimiter()
 }
 void FpsLimiter::begin()
 {
-	_startTicks = SDL_GetTicks();
+	m_startTicks = SDL_GetTicks();
 }
 float FpsLimiter::end()
 {
 	calculateFPS();
-	float frameTicks = SDL_GetTicks() - _startTicks;
-	if (1000.0f / _maxFPS > frameTicks)
-		SDL_Delay((Uint32)(1000.0f / _maxFPS - frameTicks));
-	return _fps;
+	float frameTicks = SDL_GetTicks() - m_startTicks;
+	if (1000.0f / m_maxFPS > frameTicks)
+		SDL_Delay((Uint32)(1000.0f / m_maxFPS - frameTicks));
+	return m_fps;
 }
 void FpsLimiter::setMaxFPS(float maxFPS)
 {
-	_maxFPS = maxFPS;
+	m_maxFPS = maxFPS;
 }
 void FpsLimiter::calculateFPS()
 {
@@ -31,8 +31,8 @@ void FpsLimiter::calculateFPS()
 	static float prevTicks = SDL_GetTicks();
 
 	float currentTicks = SDL_GetTicks();
-	_frameTime = currentTicks - prevTicks;
-	frameTimes[currentFrame++%NUM_SAMPLES] = _frameTime;
+	m_frameTime = currentTicks - prevTicks;
+	frameTimes[currentFrame++%NUM_SAMPLES] = m_frameTime;
 
 	int count;
 	if (currentFrame < NUM_SAMPLES)
@@ -49,9 +49,9 @@ void FpsLimiter::calculateFPS()
 	frameTimeAverage /= count;
 
 	if (frameTimeAverage != 0)
-		_fps = 1000.0f / frameTimeAverage;
+		m_fps = 1000.0f / frameTimeAverage;
 	else
-		_fps = 60.0f;	//default faulty value
+		m_fps = 60.0f;	//default faulty value
 
 	prevTicks = currentTicks;
 }

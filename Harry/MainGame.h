@@ -31,7 +31,7 @@ private:
 	void processInput();
 	void drawGame();
 	void displayFPS();
-	void updateCharacters();
+	//void updateCharacters();
 
 	Window _window;
 	int _screenWidth, _screenHeight;

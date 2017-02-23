@@ -9,9 +9,9 @@ public:
 private:
 	void calculateFPS();
 
-	float _fps;
-	float _frameTime;
-	float _maxFPS;
-	unsigned int _startTicks;
+	float m_fps;
+	float m_frameTime;
+	float m_maxFPS;
+	unsigned int m_startTicks;
 
 };

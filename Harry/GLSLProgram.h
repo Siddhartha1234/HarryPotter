@@ -17,8 +17,8 @@ public:
 
 private:
 	void compileShader(const std::string& filePath, GLuint shaderID);
-	GLuint _programID;
-	GLuint _vertexShaderID,_fragmentShaderID;
-	int _numAttributes;
+	GLuint m_programID;
+	GLuint m_vertexShaderID,m_fragmentShaderID;
+	int m_numAttributes;
 };
 

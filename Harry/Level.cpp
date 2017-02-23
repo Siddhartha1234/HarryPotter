@@ -23,36 +23,36 @@ Level::Level(const std::string& fileName,int screenWidth,int screenHeight)
 	std::string line;
 	while (std::getline(file, line))
 	{
-		_levelData.push_back(line);
+		m_levelData.push_back(line);
 	}
 	glm::vec4 uvRect(0.0f, 0.0f, 1.0f, 1.0f);
 	Color color = { 255,255,255,255 };
-	_spriteBatch.init();
-	_spriteBatch.begin();
-	for (int x = 0; x < _levelData.size(); x++)
+	m_spriteBatch.init();
+	m_spriteBatch.begin();
+	for (int x = 0; x < m_levelData.size(); x++)
 	{
-		for (int y = 0; y < _levelData[x].size(); y++)
+		for (int y = 0; y < m_levelData[x].size(); y++)
 		{
-			char tile = _levelData[x][y];
+			char tile = m_levelData[x][y];
 			glm::vec4 destRect(x*TILE_WIDTH, y*TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
 			switch (tile)
 			{
 			case 'R':
-				_spriteBatch.draw(destRect,
+				m_spriteBatch.draw(destRect,
 									uvRect,
 									redTexid,
 									0.0f,
 									color);
 				break;
 			case 'G':
-				_spriteBatch.draw(destRect,
+				m_spriteBatch.draw(destRect,
 					uvRect,
 					glassTexid,
 					0.0f,
 					color);
 				break;
 			case 'L':
-				_spriteBatch.draw(destRect,
+				m_spriteBatch.draw(destRect,
 					uvRect,
 					lightTexid,
 					0.0f,
@@ -68,7 +68,7 @@ Level::Level(const std::string& fileName,int screenWidth,int screenHeight)
 			}
 		}
 	}
-	_spriteBatch.end();	
+	m_spriteBatch.end();	
 }
 
 
@@ -78,5 +78,5 @@ Level::~Level()
 
 void Level::draw()
 {
-	_spriteBatch.renderBatch();
+	m_spriteBatch.renderBatch();
 }

@@ -5,25 +5,25 @@
 
 
 
-Sprite::Sprite():_vboID(0)
+Sprite::Sprite():m_vboID(0)
 {
 }
 
 
 Sprite::~Sprite()
 {
-	if (_vboID != 0)
-		glDeleteBuffers(1, &_vboID);
+	if (m_vboID != 0)
+		glDeleteBuffers(1, &m_vboID);
 }
 
 void Sprite::init(float x, float y, float width, float height, std::string texturePath)
 {
-	_x = x;
-	_y = y;
-	_width = width;
-	_height = height;
+	m_x = x;
+	m_y = y;
+	m_width = width;
+	m_height = height;
 
-	_texture = ResourceManager::getTexture(texturePath);
+	m_texture = ResourceManager::getTexture(texturePath);
 
 	/* STEPS:
 	1) Generate BUffer
@@ -31,8 +31,8 @@ void Sprite::init(float x, float y, float width, float height, std::string textu
 	3) Use
 	4) Unbind */
 	//generate only if not already generated
-	if (_vboID == 0)
-		glGenBuffers(1, &_vboID);
+	if (m_vboID == 0)
+		glGenBuffers(1, &m_vboID);
 
 	Vertex vertexData[6];
 
@@ -63,7 +63,7 @@ void Sprite::init(float x, float y, float width, float height, std::string textu
 	vertexData[1].setColor(0, 0, 255, 255);
 	vertexData[4].setColor(0, 255, 0, 255);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vboID);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
@@ -72,8 +72,8 @@ void Sprite::init(float x, float y, float width, float height, std::string textu
 }
 void Sprite::draw()
 {
-	glBindTexture(GL_TEXTURE_2D, _texture.id);//do not unbind them
-	glBindBuffer(GL_ARRAY_BUFFER, _vboID);
+	glBindTexture(GL_TEXTURE_2D, m_texture.id);//do not unbind them
+	glBindBuffer(GL_ARRAY_BUFFER, m_vboID);
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);

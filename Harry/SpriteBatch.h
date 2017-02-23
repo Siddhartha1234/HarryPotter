@@ -11,7 +11,29 @@ enum class GlyphSortType {
 	TEXTURE
 };
 
-struct Glyph {
+class Glyph {
+public: Glyph(){}
+		Glyph(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint Texture, float Depth, const Color& color)
+		{
+			texture = Texture;
+			depth = Depth;
+
+			topLeft.color = color;
+			topLeft.setPosition(destRect.x, destRect.y + destRect.w);//w is the y component of 
+			topLeft.setUV(uvRect.x, uvRect.y + uvRect.w);
+
+			bottomLeft.color = color;
+			bottomLeft.setPosition(destRect.x, destRect.y);//w is the y component of 
+			bottomLeft.setUV(uvRect.x, uvRect.y);
+
+			bottomRight.color = color;
+			bottomRight.setPosition(destRect.x + destRect.z, destRect.y);//z is the x component of 
+			bottomRight.setUV(uvRect.x + uvRect.z, uvRect.y);
+
+			topRight.color = color;
+			topRight.setPosition(destRect.x + destRect.z, destRect.y + destRect.w);//z is the x component of 
+			topRight.setUV(uvRect.x + uvRect.z, uvRect.y + uvRect.w);
+		}
 	GLuint texture;
 	float depth;
 	Vertex topLeft;
@@ -51,12 +73,13 @@ private:
 	static bool compareFrontToBack(Glyph* a, Glyph *b);
 	static bool compareBackToFront(Glyph* a, Glyph *b);
 	static bool compareTexture(Glyph* a, Glyph *b);
-	GLuint _vbo;
-	GLuint _vao;
+	GLuint m_vbo;
+	GLuint m_vao;
 
-	std::vector<Glyph*> _glyphs;
-	std::vector<RenderBatch> _renderBatches;
-	GlyphSortType _sortType;
+	std::vector<Glyph> m_glyphs;
+	std::vector<Glyph* > m_glyphPointers;
+	std::vector<RenderBatch> m_renderBatches;
+	GlyphSortType m_sortType;
 
 	
 };

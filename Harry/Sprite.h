@@ -11,9 +11,9 @@ public:
 	void init(float x,float y,float width,float height,std::string texturePath);
 	void draw();
 private:
-	float _x, _y;
-	float _width, _height;
-	GLuint _vboID;
-	GLTexture _texture;
+	float m_x, m_y;
+	float m_width, m_height;
+	GLuint m_vboID;
+	GLTexture m_texture;
 };
 

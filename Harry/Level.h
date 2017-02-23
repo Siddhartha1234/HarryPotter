@@ -10,10 +10,10 @@ public:
 	~Level();
 
 	void draw();
-	std::vector<std::string> getLevelData() { return _levelData; }
+	std::vector<std::string> getLevelData() { return m_levelData; }
 
 private:
-	std::vector<std::string> _levelData;
-	SpriteBatch _spriteBatch;
+	std::vector<std::string> m_levelData;
+	SpriteBatch m_spriteBatch;
 };
 

@@ -9,6 +9,7 @@
 #include "GLSLProgram.h"
 #include "Level.h"
 #include "Camera2D.h"
+#include "Bullet.h"
 
 
 enum class GameState { PLAY, EXIT };
@@ -29,25 +30,33 @@ private:
 	void processInput();
 	void drawGame();
 	void displayFPS();
-	
-	
-	int _screenWidth, _screenHeight;
-	GameState _gameState;
-	int _currentLevel;
 
-	Window _window;
-	GLSLProgram _textureProgram;
-	SpriteBatch _spriteBatch;
+	void updateBullets();
+	void updateChars();
 	
-	InputManager _inputManager;
-	Camera2D _camera;
 	
-	FpsLimiter _fpsLimiter;
-	float _maxFPS;
-	float _fps;
+	int m_screenWidth, m_screenHeight;
+	GameState m_gameState;
+	int m_currentLevel;
+	std::vector<std::string> m_leveldata;
 
-	std::vector<Level*> _levels;
+	Window m_window;
+	GLSLProgram m_textureProgram;
+	SpriteBatch m_spriteBatch;
+	
+	InputManager m_inputManager;
+	Camera2D m_camera;
+	
+	FpsLimiter m_fpsLimiter;
+	float m_maxFPS;
+	float m_fps;
 
-	Character rahul, sid;
+	std::vector<Level*> m_levels;
+	std::vector<Bullet> m_bullets;
+
+	glm::vec2 m_playerDim, m_bulletDim;
+	//std::vector<Character*> m_chars;
+	Character m_mainPlayer, sid;
+	int m_bulletTexID;
 };
 
