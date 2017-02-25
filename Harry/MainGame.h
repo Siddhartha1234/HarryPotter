@@ -51,6 +51,6 @@ private:
 	Camera2D _camera;
 	std::vector<Bullet> _bullets;
 
-	Character rahul, sid;
+	//Character rahul, sid;
 };
 

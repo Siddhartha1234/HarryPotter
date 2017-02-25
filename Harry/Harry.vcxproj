@@ -135,7 +135,6 @@
     <ClCompile Include="IOManager.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MainGame.cpp" />
     <ClCompile Include="picoPNG.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="SimpleGame.cpp" />
@@ -159,7 +158,6 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="IOManager.h" />
     <ClInclude Include="Level.h" />
-    <ClInclude Include="MainGame.h" />
     <ClInclude Include="picoPNG.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="ResourceManager.h" />

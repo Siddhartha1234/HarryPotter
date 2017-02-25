@@ -7,12 +7,7 @@
 
 
 
-Character::Character() :m_currentGunIndex(-1)
-{
-	
-}
-
-void Character::init(std::string name, glm::vec2 pos, int person, glm::vec2 dim,int speed,const std::vector<std::string>& levelData)
+Character::Character(std::string name, glm::vec2 pos, int person, glm::vec2 dim, int speed, const std::vector<std::string>& levelData) :m_currentGunIndex(-1)
 {
 	m_health = 200;
 	m_name = name;
@@ -23,12 +18,25 @@ void Character::init(std::string name, glm::vec2 pos, int person, glm::vec2 dim,
 	m_texId[SHOOTING] = ResourceManager::getTexture(m_filePaths2[m_person]).id;
 	m_speed = speed;
 	m_levelData = levelData;
-	m_state = NOTSHOOTING;
+	m_state = NOTSHOOTING;	
+}
+
+void Character::init()
+{
+	
 }
 
 
 Character::~Character()
 {
+}
+
+
+std::string Character::getData()
+{
+	std::string result = "C";
+	result += "P" + std::to_string(m_position.x) + " " + std::to_string(m_position.y) + "p" + "H" + std::to_string(m_health) + "h" + "c";
+	return result;
 }
 
 void Character::draw(SpriteBatch& spriteBatch)
@@ -73,6 +81,8 @@ void Character::stopShoot()
 void Character::respawn()
 {
 	m_health = 200;
+	int x = rand() % RESPAWN_PLACES;
+	m_position = respawnPosition[x];
 }
 
 bool Character::damageTaken(int damage)
@@ -80,7 +90,7 @@ bool Character::damageTaken(int damage)
 	m_health -= damage;
 	if (m_health <= 0)
 	{
-		std::cout << "PLAYER DEAD" << std::endl;
+		std::cout << m_name<<" DEAD" << std::endl;
 		respawn();
 		return true;
 	}

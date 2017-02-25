@@ -46,13 +46,13 @@ void SimpleGame::initSystems()
 	m_spriteBatch.init();
 	m_fpsLimiter.setMaxFPS(m_maxFPS);
 
-
+	m_leveldata = m_levels[m_currentLevel]->getLevelData();
 	for (int i = 0; i < m_noOfPlayers; i++)
 	{
 		m_chars.emplace_back(m_players[i].name, m_players[i].position, m_players[i].playerIndex, m_playerDim, 1, m_leveldata);
 	}
 
-	m_leveldata = m_levels[m_currentLevel]->getLevelData();
+	
 	m_mainPlayer = &( m_chars[m_currentIndex]);
 	//sid.init("SID", glm::vec2(100.0f, 100.0f), 2, glm::vec2(15, 15),1, m_leveldata);
 	//m_chars.push_back(&sid);
@@ -99,6 +99,7 @@ void SimpleGame::gameLoop()
 		updateChars();
 		updateBullets();
 		drawGame();
+		//std::cout << m_mainPlayer->getData() << std::endl;
 		//sendPlayerData
 
 		m_fps = m_fpsLimiter.end();
@@ -114,6 +115,8 @@ void SimpleGame::updateBullets()
 {
 	for (int j = 0; j < m_noOfPlayers; j++)
 	{
+		if (j == m_currentIndex)
+			continue;
 		for (unsigned int i = 0; i < m_bullets.size(); )
 		{
 			glm::vec2 bulPos = m_bullets[i].getPosition();
